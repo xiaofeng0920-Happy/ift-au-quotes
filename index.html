@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<meta name="description" content="IF/TL/AU 三腿期货实时行情，每 10 分钟自动更新">
+<meta property="og:title" content="IF / TL / AU 实时行情">
+<meta property="og:description" content="沪深300股指 · 30年期国债 · 黄金期货，每 10 分钟自动更新">
+<title>IF / TL / AU 实时行情</title>
+<style>
+  :root{
+    --bg:#eef1f6;--bg2:#e4e9f2;--card:#fff;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;
+    --up:#e11d48;--down:#059669;--flat:#475569;--accent:#2563eb;--live:#10b981;
+    --shadow:0 10px 30px rgba(15,23,42,.08),0 2px 8px rgba(15,23,42,.04);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(1100px 500px at 15% -10%, #dbe7ff 0%, transparent 60%),radial-gradient(900px 450px at 100% 0%, #ffe4ee 0%, transparent 55%),linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+    min-height:100vh;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1120px;margin:0 auto;padding:32px 20px 40px}
+  header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+  .eyebrow{font-size:11px;letter-spacing:.22em;color:var(--accent);font-weight:700;margin-bottom:8px}
+  h1{margin:0;font-size:32px;line-height:1.15;letter-spacing:-.02em}
+  h1 span{color:var(--sub);font-weight:600}
+  .sub{margin:8px 0 0;color:var(--sub);font-size:14px}
+  .status-box{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:650;background:#e2e8f0;color:#475569;border:1px solid rgba(15,23,42,.06)}
+  .pill i{width:8px;height:8px;border-radius:50%;background:#94a3b8;display:inline-block}
+  .pill.live{background:#e7f8f1;color:#047857;border-color:#b7ead7}
+  .pill.live i{background:var(--live);box-shadow:0 0 0 0 rgba(16,185,129,.55);animation:pulse 1.8s infinite}
+  .pill.lunch{background:#fff7e6;color:#b45309;border-color:#fde3b0}.pill.lunch i{background:#f59e0b}
+  .pill.closed{background:#eef2f7;color:#475569}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(16,185,129,.5)}70%{box-shadow:0 0 0 8px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+  .clock{font-variant-numeric:tabular-nums;color:var(--sub);font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid rgba(15,23,42,.05);border-radius:18px;padding:20px 20px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:#cbd5e1}
+  .card.up::before{background:linear-gradient(90deg,#fb7185,#e11d48)}
+  .card.down::before{background:linear-gradient(90deg,#34d399,#059669)}
+  .card-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .ticker{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;padding:0 8px;border-radius:8px;background:#0f172a;color:#fff;font-weight:800;font-size:13px;letter-spacing:.04em}
+  .contract{font-weight:700;font-size:14px;font-variant-numeric:tabular-nums}
+  .exch{margin-left:auto;font-size:11px;color:var(--sub);background:#f1f5f9;border:1px solid var(--line);padding:3px 8px;border-radius:999px}
+  .name{color:var(--sub);font-size:13px;margin-bottom:10px}
+  .quote{display:flex;align-items:baseline;gap:6px}
+  .price{font-size:clamp(30px,4.6vw,40px);font-weight:800;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+  .unit{font-size:12px;color:var(--sub);font-weight:600}
+  .up .price{color:var(--up)}.down .price{color:var(--down)}
+  .delta{margin-top:8px;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+  .delta.up{color:var(--up)}.delta.down{color:var(--down)}.delta.flat{color:var(--flat)}
+  .delta em{font-style:normal;font-size:11px;color:#94a3b8;font-weight:500}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  .stats div{display:flex;flex-direction:column;gap:3px}
+  .stats span{font-size:11px;color:#94a3b8}
+  .stats b{font-size:13px;font-weight:650;font-variant-numeric:tabular-nums}
+  .card-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;font-size:11px;color:#94a3b8;font-variant-numeric:tabular-nums}
+  .notice{margin-top:16px;padding:12px 16px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:13px}
+  .notice[hidden]{display:none}
+  footer{margin-top:26px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:var(--sub);font-size:12px}
+  footer .grow{flex:1}
+  footer b{color:var(--ink);font-variant-numeric:tabular-nums}
+  button.refresh{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:650;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.05)}
+  button.refresh:hover{border-color:#c7d2fe;color:var(--accent)}
+  button.refresh:disabled{opacity:.55;cursor:wait}
+  .skeleton{height:280px;border-radius:18px;background:linear-gradient(90deg,#f1f5f9 25%,#e9eef6 37%,#f1f5f9 63%);background-size:400% 100%;animation:shimmer 1.4s infinite}
+  @keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+  @media (min-width:861px){.wrap{min-height:100vh;display:flex;flex-direction:column;justify-content:center}}
+  @media (max-width:860px){
+    .grid{grid-template-columns:1fr}.wrap{padding:22px 14px 32px}h1{font-size:26px}.card{padding:18px 18px 14px}
+    .status-box{flex-direction:row;align-items:center;gap:12px;width:100%}
+    footer{flex-direction:column;align-items:flex-start;gap:6px}footer .refresh{margin-top:6px}
+  }
+  @media (prefers-reduced-motion:reduce){.pill.live i{animation:none}.skeleton{animation:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">FUTURES · LIVE MONITOR</div>
+      <h1>IF · TL · AU <span>实时行情</span></h1>
+      <p class="sub">沪深300股指期货 · 30年期国债期货 · 黄金期货</p>
+    </div>
+    <div class="status-box">
+      <span class="pill" id="statusPill"><i></i><span id="statusText">加载中</span></span>
+      <div class="clock" id="clock">--:--:--</div>
+    </div>
+  </header>
+
+  <section class="grid" id="grid">
+    <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+  </section>
+
+  <div class="notice" id="notice" hidden></div>
+
+  <footer>
+    <div class="grow">数据源：<b>新浪财经</b> · 自动刷新间隔 <b>10 分钟</b> · 本页独立托管，无需电脑开机</div>
+    <div>数据时间 <b id="dataTime">—</b></div>
+    <div>下次刷新 <b id="nextTime">—</b></div>
+    <button class="refresh" id="refreshBtn" type="button">立即刷新</button>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var REFRESH_MS = 10 * 60 * 1000;
+  var LEGS = [
+    {key:"IF", symbol:"IF2612", name:"沪深300股指期货", exchange:"中金所", unit:"点", dec:1},
+    {key:"TL", symbol:"TL2612", name:"30年期国债期货", exchange:"中金所", unit:"元", dec:3},
+    {key:"AU", symbol:"AU2612", name:"黄金期货", exchange:"上期所", unit:"元/克", dec:2}
+  ];
+  var grid = document.getElementById("grid");
+  var notice = document.getElementById("notice");
+  var dataTimeEl = document.getElementById("dataTime");
+  var nextTimeEl = document.getElementById("nextTime");
+  var clockEl = document.getElementById("clock");
+  var pill = document.getElementById("statusPill");
+  var statusText = document.getElementById("statusText");
+  var btn = document.getElementById("refreshBtn");
+  var nextAt = 0, loading = false;
+
+  function nf(v, d){
+    if (v === null || v === undefined || isNaN(v)) return "—";
+    return Number(v).toLocaleString("zh-CN", {minimumFractionDigits: d, maximumFractionDigits: d});
+  }
+  function dirOf(v){ return v > 0 ? "up" : (v < 0 ? "down" : "flat"); }
+  function hhmmss(s){ return s ? String(s).split(" ")[1] || s : "—"; }
+  function parseCst(s){ return s ? new Date(String(s).replace(" ","T") + "+08:00") : null; }
+  function cstNow(){ return new Date(Date.now() + 8*3600*1000); }
+  function fmtClock(d){ return [d.getHours(),d.getMinutes(),d.getSeconds()].map(function(n){return String(n).padStart(2,"0")}).join(":"); }
+  function setPill(status){
+    var cls = status === "交易中" ? "live" : (status === "午间休市" ? "lunch" : "closed");
+    pill.className = "pill " + cls;
+    statusText.textContent = status || "—";
+  }
+  function crop(v, d){ return v == null ? null : Math.round(v * Math.pow(10, d)) / Math.pow(10, d); }
+
+  function jsonp(varName, method, symbol, extra){
+    return new Promise(function(resolve, reject){
+      var s = document.createElement("script");
+      window[varName] = undefined;
+      s.src = "https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20" + varName +
+              "=/InnerFuturesNewService." + method + "?symbol=" + symbol + extra +
+              "&_=" + Date.now();
+      s.onload = function(){
+        var data = window[varName];
+        if (s.parentNode) s.parentNode.removeChild(s);
+        if (data && data.length) resolve(data);
+        else reject(new Error("empty " + varName));
+      };
+      s.onerror = function(){
+        if (s.parentNode) s.parentNode.removeChild(s);
+        reject(new Error("script " + varName));
+      };
+      document.head.appendChild(s);
+    });
+  }
+
+  function summarize(leg, mins, days){
+    var last = mins[mins.length - 1];
+    var price = Number(last.c);
+    var lastDay = days[days.length - 1];
+    var prevRef = null;
+    if (lastDay){
+      var settle = Number(lastDay.s);
+      prevRef = (isFinite(settle) && settle > 0) ? settle : Number(lastDay.c);
+    }
+    var cutoff = (lastDay ? lastDay.d : "1970-01-01") + " 15:15:00";
+    var bars = mins.filter(function(b){ return b.d > cutoff; });
+    var open, high, low, volume, oi, statDate;
+    if (bars.length){
+      high = -Infinity; low = Infinity; volume = 0;
+      bars.forEach(function(b){
+        high = Math.max(high, Number(b.h));
+        low = Math.min(low, Number(b.l));
+        volume += Number(b.v) || 0;
+      });
+      open = Number(bars[0].o);
+      oi = Number(last.p);
+      statDate = bars[0].d.slice(0, 10);
+    } else if (lastDay){
+      open = Number(lastDay.o); high = Number(lastDay.h); low = Number(lastDay.l);
+      volume = Number(lastDay.v); oi = Number(lastDay.p); statDate = lastDay.d;
+    }
+    var change = prevRef ? price - prevRef : null;
+    var pct = prevRef ? change / prevRef * 100 : null;
+    return {
+      key: leg.key, contract: leg.symbol, name: leg.name, exchange: leg.exchange,
+      unit: leg.unit, dec: leg.dec, price: price, prev_settle: prevRef,
+      change: change, pct: pct, open: open, high: high, low: low,
+      volume: volume, oi: oi, trade_date: last.d.slice(0, 10), quote_time: last.d
+    };
+  }
+
+  function loadLeg(leg){
+    return Promise.all([
+      jsonp(leg.key + "MIN", "getFewMinLine", leg.symbol, "&type=1"),
+      jsonp(leg.key + "DAY", "getDailyKLine", leg.symbol, "")
+    ]).then(function(res){ return summarize(leg, res[0], res[1]); });
+  }
+
+  function card(it){
+    var d = it.dec == null ? 2 : it.dec;
+    var dir = dirOf(it.change);
+    var sign = it.change > 0 ? "+" : "";
+    var pctSign = it.pct > 0 ? "+" : "";
+    return '' +
+      '<article class="card ' + dir + '">' +
+        '<div class="card-head"><span class="ticker">' + it.key + '</span><span class="contract">' + it.contract + '</span><span class="exch">' + it.exchange + '</span></div>' +
+        '<div class="name">' + it.name + '</div>' +
+        '<div class="quote"><span class="price">' + nf(it.price, d) + '</span><span class="unit">' + it.unit + '</span></div>' +
+        '<div class="delta ' + dir + '">' + sign + nf(it.change, d) + ' <span>(' + pctSign + nf(it.pct, 2) + '%)</span><em>较昨结算</em></div>' +
+        '<div class="stats">' +
+          '<div><span>开盘</span><b>' + nf(it.open, d) + '</b></div>' +
+          '<div><span>最高</span><b>' + nf(it.high, d) + '</b></div>' +
+          '<div><span>最低</span><b>' + nf(it.low, d) + '</b></div>' +
+          '<div><span>成交量</span><b>' + nf(it.volume, 0) + ' 手</b></div>' +
+          '<div><span>持仓量</span><b>' + nf(it.oi, 0) + ' 手</b></div>' +
+          '<div><span>昨结算</span><b>' + nf(it.prev_settle, d) + '</b></div>' +
+        '</div>' +
+        '<div class="card-foot"><span>行情时间 ' + hhmmss(it.quote_time) + '</span><span>' + (it.trade_date || "") + '</span></div>' +
+      '</article>';
+  }
+
+  function statusOf(items){
+    var latest = null;
+    items.forEach(function(i){ var d = parseCst(i.quote_time); if (d && (!latest || d > latest)) latest = d; });
+    if (!latest) return "—";
+    var age = (Date.now() - latest.getTime()) / 60000;
+    if (age <= 10) return "交易中";
+    var now = cstNow();
+    var today = now.toISOString().slice(0, 10);
+    var latestDate = new Date(latest.getTime() + 8*3600*1000).toISOString().slice(0, 10);
+    if (latestDate !== today) return "休市";
+    var t = now.getUTCHours() * 60 + now.getUTCMinutes();
+    if (t > 11*60+30 && t < 13*60) return "午间休市";
+    if (t < 9*60+30) return "未开盘";
+    return "已收盘";
+  }
+
+  function render(items){
+    grid.innerHTML = items.map(card).join("");
+    var latestStr = null;
+    items.forEach(function(i){ if (i.quote_time && (!latestStr || i.quote_time > latestStr)) latestStr = i.quote_time; });
+    if (latestStr) dataTimeEl.textContent = latestStr.slice(5);
+    setPill(statusOf(items));
+    notice.hidden = true;
+  }
+
+  function schedule(ms){
+    nextAt = Date.now() + (ms || REFRESH_MS);
+    tick();
+  }
+  function tick(){
+    clockEl.textContent = fmtClock(new Date());
+    if (!nextAt){ nextTimeEl.textContent = "—"; return; }
+    var left = Math.max(0, nextAt - Date.now());
+    var m = Math.floor(left / 60000), s = Math.floor((left % 60000) / 1000);
+    nextTimeEl.textContent = m + " 分 " + String(s).padStart(2, "0") + " 秒";
+    if (left <= 0 && !loading) load();
+  }
+
+  function load(){
+    if (loading) return;
+    loading = true; btn.disabled = true;
+    Promise.all(LEGS.map(loadLeg)).then(function(items){
+      render(items);
+      schedule(REFRESH_MS);
+    }).catch(function(err){
+      notice.hidden = false;
+      notice.textContent = "⚠ 行情获取失败：" + (err && err.message ? err.message : err) + "（稍后自动重试）";
+      schedule(60 * 1000);
+    }).finally(function(){
+      loading = false; btn.disabled = false;
+    });
+  }
+
+  btn.addEventListener("click", function(){ load(); });
+  document.addEventListener("visibilitychange", function(){
+    if (!document.hidden && nextAt && Date.now() >= nextAt) load();
+  });
+  setInterval(tick, 1000);
+  load();
+})();
+</script>
+</body>
+</html>
