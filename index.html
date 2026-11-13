@@ -162,6 +162,7 @@
     <div class="grow">数据源：<b>新浪财经</b> · 自动刷新间隔 <b>10 分钟</b> · 本页独立托管，无需电脑开机</div>
     <div>数据时间 <b id="dataTime">—</b></div>
     <div>下次刷新 <b id="nextTime">—</b></div>
+    <button class="refresh" id="pfOpenBtn" type="button">持仓监控</button>
     <button class="refresh" id="refreshBtn" type="button">立即刷新</button>
   </footer>
 </main>
@@ -336,11 +337,26 @@
     unlockPF(p, true);
   });
   pfKeyInput.addEventListener("keydown", function(e){ if (e.key === "Enter") pfUnlockBtn.click(); });
+  var pfOpenBtn = document.getElementById("pfOpenBtn");
+  pfOpenBtn.addEventListener("click", function(){
+    if (PF.holdings) {
+      pfSection.scrollIntoView({behavior: "smooth", block: "start"});
+    } else {
+      pfGate.hidden = false;
+      pfKeyInput.focus();
+    }
+  });
   (function initPass(){
-    var p = null, fromHash = false;
-    try { var m = (window.location.hash || "").match(/^#k=(.+)$/); if (m) { p = decodeURIComponent(m[1]); fromHash = true; } } catch (e) {}
+    var p = null, showError = false;
+    try { var m = (window.location.hash || "").match(/^#k=(.+)$/); if (m) { p = decodeURIComponent(m[1]); showError = true; } } catch (e) {}
+    if (!p) {
+      try {
+        var q = new URLSearchParams(window.location.search).get("k");
+        if (q) { p = q; showError = true; }
+      } catch (e) {}
+    }
     if (!p) { try { p = localStorage.getItem("ift_pf_pass"); } catch (e) {} }
-    if (p) unlockPF(p, fromHash);
+    if (p) unlockPF(p, showError);
   })();
 
   function nf(v, d){
