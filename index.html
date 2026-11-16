@@ -256,6 +256,7 @@
     var total = 0, marginTotal = 0;
     positions.forEach(function(p){ if (p.pnl != null) total += p.pnl; marginTotal += p.margin; });
     var equity = Number(h.static_equity || 0) + total;
+    if (h.equity_anchor != null) equity = Number(h.equity_anchor) + (total - Number(h.pnl_anchor || 0));
     positions.forEach(function(p){ p.margin_pct = equity > 0 ? p.margin / equity * 100 : null; });
     var riskRatio = equity > 0 ? marginTotal / equity : null;
     var order = {sell: 3, warn: 2, hold: 1, muted: 0};
